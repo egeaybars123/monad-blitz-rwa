@@ -14,7 +14,7 @@ const highlights = [
     summary:
       'Our team designs custom PCB boards that plug into devices in the field. They run an embedded stack that signs telemetry inside a hardware security module (HSM) enclosure.',
     note:
-      'Hardware acceleration lets us encrypt readings at the edge, so when the MRV payload hits-chain the proof is already sealed in silicon.'
+      'HSM components let us sign the readings at the edge, so when the energy payload\'s authenticity is already sealed in silicon.'
   },
   {
     title: 'Stack + Execution Model',
