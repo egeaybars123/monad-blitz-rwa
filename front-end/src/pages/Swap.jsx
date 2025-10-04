@@ -18,7 +18,8 @@ export default function Swap() {
     refreshBalances,
     writeTokenContract,
     publicClient,
-    pairContract
+    pairContract,
+    showDialog
   } = useApp();
   const [payAmount, setPayAmount] = useState('');
   const [receivePreview, setReceivePreview] = useState('--');
@@ -110,27 +111,27 @@ export default function Swap() {
 
   const handleSwap = async () => {
     if (!wallet.address) {
-      alert('Connect wallet to continue.');
+      showDialog({ title: 'Wallet required', message: 'Connect your wallet to start swapping.' });
       return;
     }
     if (!selectedTokens.pay || !selectedTokens.receive) {
-      alert('Select both tokens first.');
+      showDialog({ title: 'Select tokens', message: 'Choose both pay and receive tokens before swapping.' });
       return;
     }
     if (!payAmount || Number(payAmount) <= 0) {
-      alert('Enter an amount to pay.');
+      showDialog({ title: 'Enter amount', message: 'Provide a pay amount greater than zero.' });
       return;
     }
     if (!pairInfo || !pairContract?.address) {
-      alert('Pair information unavailable.');
+      showDialog({ title: 'Pool unavailable', message: 'Pair information unavailable. Please refresh later.' });
       return;
     }
     if (expectedOut <= 0n) {
-      alert('Unable to derive output amount. Check reserves or input.');
+      showDialog({ title: 'Quote unavailable', message: 'Unable to derive an output amount. Check reserves or input.' });
       return;
     }
     if (insufficientBalance) {
-      alert('Insufficient balance for this swap.');
+      showDialog({ title: 'Insufficient balance', message: 'Your wallet balance is too low for this swap.' });
       return;
     }
 
@@ -147,7 +148,7 @@ export default function Swap() {
     } else if (payAddress === token1 && receiveAddress === token0) {
       amount0Out = expectedOut;
     } else {
-      alert('Selected tokens do not align with the configured pair.');
+      showDialog({ title: 'Token mismatch', message: 'Selected tokens do not align with the configured pair.' });
       return;
     }
 
@@ -389,15 +390,6 @@ export default function Swap() {
                 Pool reserves load after the first on-chain sync.
               </p>
             )}
-          </div>
-
-          <div className="rounded border border-xpGray bg-white/90 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <h3 className="text-[14px] font-semibold text-[#0c3a94]">Swap checklist</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] text-[#4b4b4b]">
-              <li>Wallet must hold sufficient {selectedTokens.pay?.symbol ?? 'token'} balance.</li>
-              <li>Ensure pool reserves are synced for accurate quotes.</li>
-              <li>Final output may differ slightly after confirmation.</li>
-            </ul>
           </div>
         </aside>
       </div>

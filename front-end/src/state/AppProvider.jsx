@@ -50,7 +50,40 @@ export function AppProvider({ children }) {
     lastDeviceSync: 'Telemetry feed idle'
   });
   const [drawerState, setDrawerState] = useState({ open: false, callback: null, title: 'Select token', exclude: [] });
+  const [dialog, setDialog] = useState({ open: false, title: '', message: '', detail: '', linkHref: null, linkLabel: '' });
   const abiCache = useRef(new Map());
+
+  const explorerBase = 'https://monad-testnet.socialscan.io/tx/';
+
+  const hideDialog = useCallback(() => {
+    setDialog({ open: false, title: '', message: '', detail: '', linkHref: null, linkLabel: '' });
+  }, []);
+
+  const showDialog = useCallback((options) => {
+    const { title = 'CarbonBlitz', message = '', detail = '', linkHref = null, linkLabel = 'View in explorer' } = options ?? {};
+    setDialog({
+      open: true,
+      title,
+      message,
+      detail,
+      linkHref,
+      linkLabel: linkHref ? linkLabel : ''
+    });
+  }, []);
+
+  const showTxDialog = useCallback(
+    ({ method, hash }) => {
+      if (!hash) return;
+      showDialog({
+        title: `${method} submitted`,
+        message: 'Transaction sent successfully.',
+        detail: hash,
+        linkHref: `${explorerBase}${hash}`,
+        linkLabel: 'Open in Monad explorer'
+      });
+    },
+    [explorerBase, showDialog]
+  );
 
   const fetchAbi = useCallback(async (path) => {
     if (!path) throw new Error('ABI path missing');
@@ -142,7 +175,7 @@ export function AppProvider({ children }) {
 
   const connectWallet = useCallback(async () => {
     if (!window.ethereum) {
-      alert('MetaMask or a compatible wallet is required.');
+      showDialog({ title: 'Wallet required', message: 'MetaMask or a compatible wallet is required.' });
       return;
     }
 
@@ -177,8 +210,9 @@ export function AppProvider({ children }) {
     } catch (error) {
       console.error('Wallet connection failed', error);
       setStatus({ message: 'Wallet connection failed', connected: false });
+      showDialog({ title: 'Connection failed', message: error.message || 'Wallet connection failed. Please try again.' });
     }
-  }, [chain, config, evaluateAdminStatus, walletClient]);
+  }, [chain, config, evaluateAdminStatus, walletClient, showDialog]);
 
   useEffect(() => {
     if (!window.ethereum) return;
@@ -237,17 +271,17 @@ export function AppProvider({ children }) {
   const callContract = useCallback(
     async (contractKey, method, params = []) => {
       if (!wallet.address) {
-        alert('Connect wallet to continue.');
+        showDialog({ title: 'Wallet required', message: 'Connect your wallet to continue.' });
         return;
       }
       if (!walletClient || !config?.contracts?.[contractKey]) {
-        alert('Wallet client unavailable or contract not configured.');
+        showDialog({ title: 'Unavailable', message: 'Wallet client unavailable or contract not configured.' });
         return;
       }
 
       const contractConf = config.contracts[contractKey];
       if (!contractConf.abi) {
-        alert(`ABI path missing for ${contractKey}`);
+        showDialog({ title: 'Configuration issue', message: `ABI path missing for ${contractKey}.` });
         return;
       }
 
@@ -263,14 +297,14 @@ export function AppProvider({ children }) {
         });
 
         console.info(`${method} submitted`, hash);
-        alert(`${method} transaction sent. Hash: ${hash}`);
+        showTxDialog({ method, hash });
         return hash;
       } catch (error) {
         console.error(`${method} failed`, error);
-        alert(`Transaction failed: ${error.message || 'Unknown error'}`);
+        showDialog({ title: `${method} failed`, message: error.message || 'Transaction failed.' });
       }
     },
-    [config, walletClient, wallet.address, fetchAbi]
+    [config, walletClient, wallet.address, fetchAbi, showDialog, showTxDialog]
   );
 
   const disconnectWallet = useCallback(() => {
@@ -283,15 +317,15 @@ export function AppProvider({ children }) {
   const writeTokenContract = useCallback(
     async (tokenMeta, method, params = []) => {
       if (!tokenMeta?.address) {
-        alert('Token metadata incomplete.');
+        showDialog({ title: 'Missing token metadata', message: 'Token metadata incomplete.' });
         return;
       }
       if (!wallet.address) {
-        alert('Connect wallet to continue.');
+        showDialog({ title: 'Wallet required', message: 'Connect your wallet to continue.' });
         return;
       }
       if (!walletClient) {
-        alert('Wallet client unavailable.');
+        showDialog({ title: 'Unavailable', message: 'Wallet client unavailable.' });
         return;
       }
 
@@ -306,14 +340,14 @@ export function AppProvider({ children }) {
           account: wallet.address
         });
         console.info(`${method} submitted for ${tokenMeta.symbol}`, hash);
-        alert(`${method} transaction sent. Hash: ${hash}`);
+        showTxDialog({ method, hash });
         return hash;
       } catch (error) {
         console.error(`${method} failed for ${tokenMeta?.symbol}`, error);
-        alert(`Transaction failed: ${error.message || 'Unknown error'}`);
+        showDialog({ title: `${method} failed`, message: error.message || 'Transaction failed.' });
       }
     },
-    [fetchAbi, wallet.address, walletClient]
+    [fetchAbi, wallet.address, walletClient, showDialog, showTxDialog]
   );
 
   const refreshBalances = useCallback(async () => {
@@ -489,7 +523,10 @@ export function AppProvider({ children }) {
       refreshMetrics,
       balances,
       refreshBalances,
-      writeTokenContract
+      writeTokenContract,
+      dialog,
+      showDialog,
+      hideDialog
     }),
     [
       config,
@@ -514,7 +551,10 @@ export function AppProvider({ children }) {
       refreshMetrics,
       balances,
       refreshBalances,
-      writeTokenContract
+      writeTokenContract,
+      dialog,
+      showDialog,
+      hideDialog
     ]
   );
 

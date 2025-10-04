@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar.jsx';
 import TokenDrawer from './TokenDrawer.jsx';
 import XPWindow from './XPWindow.jsx';
+import XPDialog from './XPDialog.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 const NAV_ITEMS = [
@@ -13,7 +14,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Layout({ children }) {
-  const { wallet, connectWallet, disconnectWallet, metrics } = useApp();
+  const { wallet, connectWallet, disconnectWallet, metrics, dialog, hideDialog } = useApp();
   const isConnected = Boolean(wallet.address);
   const [startOpen, setStartOpen] = useState(false);
   const [clock, setClock] = useState(() => new Date());
@@ -118,6 +119,17 @@ export default function Layout({ children }) {
       )}
 
       <TokenDrawer />
+
+      {dialog?.open && (
+        <XPDialog
+          title={dialog.title}
+          message={dialog.message}
+          detail={dialog.detail}
+          linkHref={dialog.linkHref}
+          linkLabel={dialog.linkLabel}
+          onClose={hideDialog}
+        />
+      )}
     </div>
   );
 }

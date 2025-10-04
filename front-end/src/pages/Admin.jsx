@@ -3,7 +3,7 @@ import XPWindow from '../components/XPWindow.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 export default function Admin() {
-  const { wallet, callContract, parseUnits, tokens } = useApp();
+  const { wallet, callContract, parseUnits, tokens, showDialog } = useApp();
   const [deviceAddress, setDeviceAddress] = useState('');
   const [batchAddresses, setBatchAddresses] = useState('');
   const [mintForm, setMintForm] = useState({ to: '', amount: '', device: '', signature: '' });
@@ -11,7 +11,7 @@ export default function Admin() {
   const handleWhitelist = async (event) => {
     event.preventDefault();
     if (!wallet.isAdmin) {
-      alert('Admin wallet required.');
+      showDialog({ title: 'Admin required', message: 'Only admin wallets can whitelist devices.' });
       return;
     }
     await callContract('carbonBlitz', 'whitelistSmartDevice', [deviceAddress]);
@@ -21,7 +21,7 @@ export default function Admin() {
   const handleBatch = async (event) => {
     event.preventDefault();
     if (!wallet.isAdmin) {
-      alert('Admin wallet required.');
+      showDialog({ title: 'Admin required', message: 'Only admin wallets can whitelist devices.' });
       return;
     }
     const addresses = batchAddresses
@@ -29,7 +29,7 @@ export default function Admin() {
       .map((line) => line.trim())
       .filter(Boolean);
     if (!addresses.length) {
-      alert('Provide at least one address.');
+      showDialog({ title: 'Addresses required', message: 'Provide at least one device address.' });
       return;
     }
     await callContract('carbonBlitz', 'whitelistBatchSmartDevices', [addresses]);
@@ -39,7 +39,7 @@ export default function Admin() {
   const handleMint = async (event) => {
     event.preventDefault();
     if (!wallet.isAdmin) {
-      alert('Admin wallet required.');
+      showDialog({ title: 'Admin required', message: 'Only admin wallets can mint tokens.' });
       return;
     }
     const decimals = tokens.find((token) => token.symbol === 'CBLTZ')?.decimals ?? 18;
@@ -56,13 +56,6 @@ export default function Admin() {
       footer={`Admin rights: ${wallet.isAdmin ? 'granted' : 'wallet locked'}`}
     >
       <div className="space-y-4 p-6">
-        <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-          <h3 className="text-[14px] font-semibold text-[#0c3a94]">CarbonBlitz control center</h3>
-          <p className="mt-1 text-[#4b4b4b]">
-            Manage smart device access and direct mint flows. Administrative actions require your wallet to be on the approved list.
-          </p>
-        </div>
-
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
             <h4 className="text-[14px] font-semibold text-[#0c3a94]">Whitelist smart device</h4>
@@ -87,7 +80,6 @@ export default function Admin() {
                 {wallet.isAdmin ? 'Whitelist device' : 'Admin required'}
               </button>
             </form>
-            <p className="mt-3 text-[11px] text-[#4b4b4b]">Approved devices may submit signed telemetry for issuance.</p>
           </div>
 
           <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
@@ -183,7 +175,6 @@ export default function Admin() {
                 {wallet.isAdmin ? 'Mint tokens' : 'Admin required'}
               </button>
             </form>
-            <p className="mt-3 text-[11px] text-[#4b4b4b]">Signatures must match the payload produced by `hashMintPayload`.</p>
           </div>
         </div>
       </div>

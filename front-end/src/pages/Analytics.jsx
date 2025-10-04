@@ -21,10 +21,7 @@ export default function Analytics() {
     >
       <div className="space-y-4 p-6">
         <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-          <h3 className="text-[14px] font-semibold text-[#0c3a94]">Telemetry overview</h3>
-          <p className="mt-1 text-[#4b4b4b]">
-            Device activity, mint readiness, and energy throughput appear here once your wallet unlocks the CarbonBlitz console.
-          </p>
+          <h3 className="text-[14px] font-semibold text-[#0c3a94]">Telemetry Overview</h3>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

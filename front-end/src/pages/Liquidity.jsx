@@ -16,7 +16,8 @@ export default function Liquidity() {
     writeTokenContract,
     refreshBalances,
     publicClient,
-    pairContract
+    pairContract,
+    showDialog
   } = useApp();
   const [amountUsdc, setAmountUsdc] = useState('');
   const [amountCbltz, setAmountCbltz] = useState('');
@@ -43,14 +44,6 @@ export default function Liquidity() {
     if (!decimalPart) return integerPart;
     return `${integerPart}.${decimalPart.slice(0, Math.min(6, decimalPart.length))}`;
   };
-
-  const usdcHoldings = useMemo(() => formattedBalance(usdcToken, usdcBalance), [usdcToken, usdcBalance]);
-  const cbltzHoldings = useMemo(() => formattedBalance(cbltzToken, cbltzBalance), [cbltzToken, cbltzBalance]);
-  const poolRatioText = useMemo(() => {
-    if (!poolRatio || !Number.isFinite(poolRatio)) return '--';
-    const ratio = Math.max(poolRatio, 0);
-    return `1 ${usdcToken?.symbol ?? 'USDC'} ≈ ${ratio.toFixed(4)} ${cbltzToken?.symbol ?? 'CBLTZ'}`;
-  }, [poolRatio, usdcToken, cbltzToken]);
 
   const parsedUsdc = useMemo(() => {
     if (!usdcToken || !amountUsdc) return 0n;
@@ -106,6 +99,14 @@ export default function Liquidity() {
 
     return reserveCbltzFloat / reserveUsdcFloat;
   }, [pairInfo, usdcToken, cbltzToken]);
+
+  const usdcHoldings = useMemo(() => formattedBalance(usdcToken, usdcBalance), [usdcToken, usdcBalance]);
+  const cbltzHoldings = useMemo(() => formattedBalance(cbltzToken, cbltzBalance), [cbltzToken, cbltzBalance]);
+  const poolRatioText = useMemo(() => {
+    if (!poolRatio || !Number.isFinite(poolRatio)) return '--';
+    const ratio = Math.max(poolRatio, 0);
+    return `1 ${usdcToken?.symbol ?? 'USDC'} ≈ ${ratio.toFixed(4)} ${cbltzToken?.symbol ?? 'CBLTZ'}`;
+  }, [poolRatio, usdcToken, cbltzToken]);
 
   useEffect(() => {
     if (!poolRatio) return;
@@ -171,19 +172,19 @@ export default function Liquidity() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!wallet.address) {
-      alert('Connect wallet to continue.');
+      showDialog({ title: 'Wallet required', message: 'Connect your wallet to continue.' });
       return;
     }
     if (!amountUsdc || !amountCbltz) {
-      alert('Enter token amounts.');
+      showDialog({ title: 'Enter amounts', message: 'Provide both USDC and CBLTZ amounts before depositing.' });
       return;
     }
     if (!usdcToken || !cbltzToken || !pairContract?.address) {
-      alert('Token or pair metadata missing.');
+      showDialog({ title: 'Configuration issue', message: 'Token or pair metadata is missing.' });
       return;
     }
     if (insufficientUsdc || insufficientCbltz) {
-      alert('Insufficient balance for deposit.');
+      showDialog({ title: 'Insufficient balance', message: 'Your wallet balance is insufficient for this deposit.' });
       return;
     }
 
@@ -323,14 +324,7 @@ export default function Liquidity() {
             </dl>
           </div>
 
-          <div className="rounded border border-xpGray bg-white/90 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <h3 className="text-[14px] font-semibold text-[#0c3a94]">Pool insights</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] text-[#4b4b4b]">
-              <li>Pair status: {pairInfo ? 'Ready for deposits' : 'Awaiting pair reserves'}.</li>
-              <li>Transfers execute sequentially to ensure balanced deposits.</li>
-              <li>Receipts appear in your wallet history once both legs settle.</li>
-            </ul>
-          </div>
+          
         </aside>
       </div>
     </XPWindow>
