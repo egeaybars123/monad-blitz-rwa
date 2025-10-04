@@ -1,0 +1,43 @@
+{
+  "network": {
+    "name": "Monad Testnet",
+    "chainId": 10143,
+    "rpcUrl": "https://testnet-rpc.monad.xyz",
+    "explorerUrl": "https://explorer-testnet.monad.xyz"
+  },
+  "admin": {
+    "whitelist": [
+      "0x106a67e1C0474c29935D6521EA59470b1e1fB350"
+    ]
+  },
+  "tokens": {
+    "USDC": {
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "address": "0x0608c5413F33c6561b612012623A3A26Eb10B8f6",
+      "decimals": 18,
+      "abi": "/abis/erc20.json"
+    },
+    "CBLTZ": {
+      "symbol": "CBLTZ",
+      "name": "CorbanBlitz",
+      "address": "0x9b79231a9D37fdda4B21ACc0Eb503CB06d8c688C",
+      "decimals": 18,
+      "abi": "/abis/carbonBlitz.json"
+    }
+  },
+  "contracts": {
+    "carbonBlitz": {
+      "address": "0x9b79231a9D37fdda4B21ACc0Eb503CB06d8c688C",
+      "abi": "/abis/carbonBlitz.json"
+    },
+    "uniswapV2Factory": {
+      "address": "0x5b191e51db475ecb7d1adfb0dcba28e53426153f",
+      "abi": "/abis/uniswapV2Factory.json"
+    },
+    "uniswapV2Pair": {
+      "address": "0x17aD1c0Df4e6c7C027f9d1Ad35Ef1D5D72767797",
+      "abi": "/abis/uniswapV2Pair.json"
+    }
+  }
+}
