@@ -5,6 +5,7 @@ import Swap from './pages/Swap.jsx';
 import Liquidity from './pages/Liquidity.jsx';
 import Analytics from './pages/Analytics.jsx';
 import Admin from './pages/Admin.jsx';
+import CarbonBlitz from './pages/CarbonBlitz.jsx';
 import { AppProvider } from './state/AppProvider.jsx';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/liquidity" element={<Liquidity />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/carbonblitz" element={<CarbonBlitz />} />
         </Routes>
       </Layout>
     </AppProvider>
