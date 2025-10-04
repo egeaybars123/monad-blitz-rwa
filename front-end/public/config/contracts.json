@@ -7,14 +7,14 @@
   },
   "admin": {
     "whitelist": [
-      "0x00000000000000000000000000000000ADMIN01"
+      "0x106a67e1C0474c29935D6521EA59470b1e1fB350"
     ]
   },
   "tokens": {
     "USD": {
-      "symbol": "USD",
-      "name": "Mock US Dollar",
-      "address": "0x00000000000000000000000000000000USD0001",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "address": "0x0608c5413F33c6561b612012623A3A26Eb10B8f6",
       "decimals": 18
     },
     "TRY": {
@@ -25,18 +25,18 @@
     },
     "CBLTZ": {
       "symbol": "CBLTZ",
-      "name": "CarbonBlitz Utility Token",
-      "address": "0x00000000000000000000000000000000CBLTZ01",
+      "name": "CarbonBlitz",
+      "address": "0x9b79231a9D37fdda4B21ACc0Eb503CB06d8c688C",
       "decimals": 18
     }
   },
   "contracts": {
     "carbonBlitz": {
-      "address": "0x00000000000000000000000000000000CBLZ001",
+      "address": "0x9b79231a9D37fdda4B21ACc0Eb503CB06d8c688C",
       "abi": "/abis/carbonBlitz.json"
     },
     "uniswapV2Factory": {
-      "address": "0x00000000000000000000000000000000UNI2001",
+      "address": "0x5b191e51db475ecb7d1adfb0dcba28e53426153f",
       "abi": "/abis/uniswapV2Factory.json"
     },
     "uniswapV2Router": {
