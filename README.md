@@ -35,4 +35,3 @@ A fast, minimal RWA prototype that mints verifiable **carbon credit tokens** on 
 - **Compliance hooks:** Optional allow-lists/KYC adapters for regulated contexts.
 - **Analytics:** Stand up a lightweight indexer and a dashboard for batch inventory and retirement leaderboards.
 - **Contributions welcome:** Open issues or submit a PR with focused improvements (tests, gas nudges, UX polish).
-
