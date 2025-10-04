@@ -27,14 +27,19 @@ const highlights = [
 
 const roadmap = [
   {
-    title: 'HSM Rollout: ',
+    title: 'HSM rollout',
     detail:
       'Integrate the CarbonBlitz secure element with on-site devices so attestation keys never leave the module. That means true tamper-evident data before it ever touches the chain.'
   },
   {
-    title: 'Regulation Roundtable: ',
+    title: 'Regulation roundtable',
     detail:
       'Meet with regulators and voluntary market councils to pair smart-contract rails with the compliance language they expect. We want CarbonBlitz dashboards to pass audits without translators.'
+  },
+  {
+    title: 'Anomaly detection mesh',
+    detail:
+      'Enable machine-to-machine chatter between our boards so they compare production curves in real time. Embedded ML models surface anomalies and push signed alerts on-chain before bad data touches the registry.'
   }
 ];
 

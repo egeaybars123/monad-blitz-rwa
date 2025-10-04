@@ -259,7 +259,7 @@ export default function Liquidity() {
                 onChange={(event) => handleUsdcChange(event.target.value)}
                 type="number"
                 min="0"
-                step="0.0001"
+                step="any"
                 placeholder="0.00"
                 className="mt-2 w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-right text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
               />
@@ -281,7 +281,7 @@ export default function Liquidity() {
                 onChange={(event) => handleCbltzChange(event.target.value)}
                 type="number"
                 min="0"
-                step="0.0001"
+                step="any"
                 placeholder="0.00"
                 className="mt-2 w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-right text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
               />
