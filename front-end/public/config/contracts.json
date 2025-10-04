@@ -1,0 +1,50 @@
+{
+  "network": {
+    "name": "Monad Testnet",
+    "chainId": 10143,
+    "rpcUrl": "https://testnet-rpc.monad.xyz",
+    "explorerUrl": "https://explorer-testnet.monad.xyz"
+  },
+  "admin": {
+    "whitelist": [
+      "0x00000000000000000000000000000000ADMIN01"
+    ]
+  },
+  "tokens": {
+    "USD": {
+      "symbol": "USD",
+      "name": "Mock US Dollar",
+      "address": "0x00000000000000000000000000000000USD0001",
+      "decimals": 18
+    },
+    "TRY": {
+      "symbol": "TRY",
+      "name": "Mock Turkish Lira",
+      "address": "0x00000000000000000000000000000000TRY0001",
+      "decimals": 18
+    },
+    "CBLTZ": {
+      "symbol": "CBLTZ",
+      "name": "CarbonBlitz Utility Token",
+      "address": "0x00000000000000000000000000000000CBLTZ01",
+      "decimals": 18
+    }
+  },
+  "contracts": {
+    "carbonBlitz": {
+      "address": "0x00000000000000000000000000000000CBLZ001",
+      "abi": "/abis/carbonBlitz.json"
+    },
+    "uniswapV2Factory": {
+      "address": "0x00000000000000000000000000000000UNI2001",
+      "abi": "/abis/uniswapV2Factory.json"
+    },
+    "uniswapV2Router": {
+      "address": "0x00000000000000000000000000000000UNI2002",
+      "abi": "/abis/uniswapV2Router.json"
+    },
+    "stablePool": {
+      "address": "0x00000000000000000000000000000000POOL001"
+    }
+  }
+}
