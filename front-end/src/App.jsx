@@ -1,7 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
-import Home from './pages/Home.jsx';
 import Swap from './pages/Swap.jsx';
 import Liquidity from './pages/Liquidity.jsx';
 import Analytics from './pages/Analytics.jsx';
@@ -13,7 +12,7 @@ export default function App() {
     <AppProvider>
       <Layout>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Swap />} />
           <Route path="/swap" element={<Swap />} />
           <Route path="/liquidity" element={<Liquidity />} />
           <Route path="/analytics" element={<Analytics />} />

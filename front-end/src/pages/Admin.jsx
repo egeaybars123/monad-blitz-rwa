@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import XPWindow from '../components/XPWindow.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 export default function Admin() {
-  const { wallet, status, callContract, parseUnits, tokens } = useApp();
+  const { wallet, callContract, parseUnits, tokens } = useApp();
   const [deviceAddress, setDeviceAddress] = useState('');
   const [batchAddresses, setBatchAddresses] = useState('');
   const [mintForm, setMintForm] = useState({ to: '', amount: '', device: '', signature: '' });
@@ -48,147 +49,144 @@ export default function Admin() {
   };
 
   return (
-    <section className="rounded-3xl border border-monad-purple/25 bg-monad-black/70 p-8 shadow-xl backdrop-blur">
-      <header className="flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-2xl font-semibold">Admin Console</h3>
-        <span
-          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
-            wallet.isAdmin
-              ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-              : 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-          }`}
-        >
-          {wallet.isAdmin ? 'Admin' : status.message}
-        </span>
-      </header>
-
-      <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-white/12 bg-black/30 p-6 shadow">
-          <h4 className="text-lg font-semibold">Whitelist Smart Device</h4>
-          <form onSubmit={handleWhitelist} className="mt-4 space-y-4">
-            <label className="text-sm text-monad-offwhite/70" htmlFor="device-address">
-              Device public key
-            </label>
-            <input
-              id="device-address"
-              value={deviceAddress}
-              onChange={(event) => setDeviceAddress(event.target.value)}
-              type="text"
-              placeholder="0x..."
-              required
-              className="w-full rounded-2xl border border-monad-purple/25 bg-black/40 px-4 py-3 text-sm text-monad-offwhite placeholder:text-monad-offwhite/40 focus:border-monad-berry focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="w-full rounded-full bg-gradient-to-r from-monad-berry to-monad-purple px-4 py-2 text-sm font-semibold shadow-glow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!wallet.isAdmin}
-            >
-              {wallet.isAdmin ? 'Whitelist device' : 'Connect admin wallet'}
-            </button>
-          </form>
-          <p className="mt-4 text-xs text-monad-offwhite/60">
-            Approved device keys can submit signed telemetry for carbon issuance.
+    <XPWindow
+      title="Admin Console"
+      icon="/logo/monad_rwa_logo.png"
+      bodyClassName="p-0"
+      footer={`Admin rights: ${wallet.isAdmin ? 'granted' : 'wallet locked'}`}
+    >
+      <div className="space-y-4 p-6">
+        <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <h3 className="text-[14px] font-semibold text-[#0c3a94]">CarbonBlitz control center</h3>
+          <p className="mt-1 text-[#4b4b4b]">
+            Manage smart device access and direct mint flows. Administrative actions require your wallet to be on the approved list.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/12 bg-black/30 p-6 shadow">
-          <h4 className="text-lg font-semibold">Batch Whitelist</h4>
-          <form onSubmit={handleBatch} className="mt-4 space-y-4">
-            <label className="text-sm text-monad-offwhite/70" htmlFor="batch-addresses">
-              Paste device addresses (one per line)
-            </label>
-            <textarea
-              id="batch-addresses"
-              value={batchAddresses}
-              onChange={(event) => setBatchAddresses(event.target.value)}
-              rows="5"
-              placeholder="0xabc...\n0xdef..."
-              required
-              className="w-full rounded-2xl border border-monad-purple/25 bg-black/40 px-4 py-3 text-sm text-monad-offwhite placeholder:text-monad-offwhite/40 focus:border-monad-berry focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="w-full rounded-full border border-monad-purple/40 bg-monad-blue/60 px-4 py-2 text-sm font-semibold transition hover:border-monad-berry/40 hover:bg-monad-berry/30 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!wallet.isAdmin}
-            >
-              {wallet.isAdmin ? 'Batch whitelist' : 'Connect admin wallet'}
-            </button>
-          </form>
-        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h4 className="text-[14px] font-semibold text-[#0c3a94]">Whitelist smart device</h4>
+            <form onSubmit={handleWhitelist} className="mt-3 space-y-3">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]" htmlFor="device-address">
+                Device public key
+              </label>
+              <input
+                id="device-address"
+                value={deviceAddress}
+                onChange={(event) => setDeviceAddress(event.target.value)}
+                type="text"
+                placeholder="0x..."
+                required
+                className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="w-full rounded border border-[#0b3b9e] bg-gradient-to-b from-[#5099ff] to-[#1c62d1] px-3 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={!wallet.isAdmin}
+              >
+                {wallet.isAdmin ? 'Whitelist device' : 'Admin required'}
+              </button>
+            </form>
+            <p className="mt-3 text-[11px] text-[#4b4b4b]">Approved devices may submit signed telemetry for issuance.</p>
+          </div>
 
-        <div className="rounded-2xl border border-white/12 bg-black/30 p-6 shadow xl:col-span-1 md:col-span-2">
-          <h4 className="text-lg font-semibold">Mint Carbon Credits</h4>
-          <form onSubmit={handleMint} className="mt-4 space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm text-monad-offwhite/70" htmlFor="mint-to">
-                Recipient
-              </label>
-              <input
-                id="mint-to"
-                value={mintForm.to}
-                onChange={(event) => setMintForm((prev) => ({ ...prev, to: event.target.value }))}
-                type="text"
-                placeholder="0x..."
-                required
-                className="w-full rounded-2xl border border-monad-purple/25 bg-black/40 px-4 py-3 text-sm text-monad-offwhite placeholder:text-monad-offwhite/40 focus:border-monad-berry focus:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-monad-offwhite/70" htmlFor="mint-amount">
-                Amount
-              </label>
-              <input
-                id="mint-amount"
-                value={mintForm.amount}
-                onChange={(event) => setMintForm((prev) => ({ ...prev, amount: event.target.value }))}
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                className="w-full rounded-2xl border border-monad-purple/25 bg-black/40 px-4 py-3 text-sm text-monad-offwhite placeholder:text-monad-offwhite/40 focus:border-monad-berry focus:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-monad-offwhite/70" htmlFor="mint-device">
-                Smart device
-              </label>
-              <input
-                id="mint-device"
-                value={mintForm.device}
-                onChange={(event) => setMintForm((prev) => ({ ...prev, device: event.target.value }))}
-                type="text"
-                placeholder="0x..."
-                required
-                className="w-full rounded-2xl border border-monad-purple/25 bg-black/40 px-4 py-3 text-sm text-monad-offwhite placeholder:text-monad-offwhite/40 focus:border-monad-berry focus:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-monad-offwhite/70" htmlFor="mint-signature">
-                ECDSA signature
+          <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h4 className="text-[14px] font-semibold text-[#0c3a94]">Batch whitelist</h4>
+            <form onSubmit={handleBatch} className="mt-3 space-y-3">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]" htmlFor="batch-addresses">
+                One address per line
               </label>
               <textarea
-                id="mint-signature"
-                value={mintForm.signature}
-                onChange={(event) => setMintForm((prev) => ({ ...prev, signature: event.target.value }))}
-                rows="2"
-                placeholder="0xsignature"
+                id="batch-addresses"
+                value={batchAddresses}
+                onChange={(event) => setBatchAddresses(event.target.value)}
+                rows="6"
+                placeholder="0xabc...\n0xdef..."
                 required
-                className="w-full rounded-2xl border border-monad-purple/25 bg-black/40 px-4 py-3 text-sm text-monad-offwhite placeholder:text-monad-offwhite/40 focus:border-monad-berry focus:outline-none"
+                className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
               />
-            </div>
-            <button
-              type="submit"
-              className="w-full rounded-full bg-gradient-to-r from-monad-berry to-monad-purple px-4 py-2 text-sm font-semibold shadow-glow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!wallet.isAdmin}
-            >
-              {wallet.isAdmin ? 'Mint tokens' : 'Connect admin wallet'}
-            </button>
-          </form>
-          <p className="mt-4 text-xs text-monad-offwhite/60">
-            Signatures must be produced via `hashMintPayload` and verified on-chain.
-          </p>
+              <button
+                type="submit"
+                className="w-full rounded border border-[#0b3b9e] bg-gradient-to-b from-[#5099ff] to-[#1c62d1] px-3 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={!wallet.isAdmin}
+              >
+                {wallet.isAdmin ? 'Batch whitelist' : 'Admin required'}
+              </button>
+            </form>
+          </div>
+
+          <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:col-span-1 md:col-span-2">
+            <h4 className="text-[14px] font-semibold text-[#0c3a94]">Mint carbon credits</h4>
+            <form onSubmit={handleMint} className="mt-3 space-y-3">
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]" htmlFor="mint-to">
+                  Recipient
+                </label>
+                <input
+                  id="mint-to"
+                  value={mintForm.to}
+                  onChange={(event) => setMintForm((prev) => ({ ...prev, to: event.target.value }))}
+                  type="text"
+                  placeholder="0x..."
+                  required
+                  className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]" htmlFor="mint-amount">
+                  Amount
+                </label>
+                <input
+                  id="mint-amount"
+                  value={mintForm.amount}
+                  onChange={(event) => setMintForm((prev) => ({ ...prev, amount: event.target.value }))}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]" htmlFor="mint-device">
+                  Smart device
+                </label>
+                <input
+                  id="mint-device"
+                  value={mintForm.device}
+                  onChange={(event) => setMintForm((prev) => ({ ...prev, device: event.target.value }))}
+                  type="text"
+                  placeholder="0x..."
+                  required
+                  className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]" htmlFor="mint-signature">
+                  ECDSA signature
+                </label>
+                <textarea
+                  id="mint-signature"
+                  value={mintForm.signature}
+                  onChange={(event) => setMintForm((prev) => ({ ...prev, signature: event.target.value }))}
+                  rows="3"
+                  placeholder="0xsignature"
+                  required
+                  className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full rounded border border-[#0b3b9e] bg-gradient-to-b from-[#5099ff] to-[#1c62d1] px-3 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={!wallet.isAdmin}
+              >
+                {wallet.isAdmin ? 'Mint tokens' : 'Admin required'}
+              </button>
+            </form>
+            <p className="mt-3 text-[11px] text-[#4b4b4b]">Signatures must match the payload produced by `hashMintPayload`.</p>
+          </div>
         </div>
       </div>
-    </section>
+    </XPWindow>
   );
 }

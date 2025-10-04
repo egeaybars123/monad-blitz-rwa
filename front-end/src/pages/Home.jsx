@@ -2,95 +2,130 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../state/AppProvider.jsx';
 
-const cards = [
+const modules = [
   {
-    title: 'Swap',
-    description: 'Swap between USDC and CBLTZ with direct pair execution.',
-    href: '/swap',
-    cta: 'Go to swap'
+    title: 'Swap Engine',
+    copy: 'Route USDC ↔︎ CBLTZ with oracle-backed slippage controls.',
+    href: '/swap'
   },
   {
-    title: 'Liquidity',
-    description: 'Provide dual-sided liquidity to amplify RWA-backed markets.',
-    href: '/liquidity',
-    cta: 'Manage liquidity'
+    title: 'Liquidity Studio',
+    copy: 'Bootstrap RWAvangers pools and earn climate-aligned yield.',
+    href: '/liquidity'
   },
   {
-    title: 'Analytics',
-    description: 'Monitor smart device telemetry, issuance queues, and on-chain supply.',
-    href: '/analytics',
-    cta: 'View analytics'
+    title: 'Telemetry Analytics',
+    copy: 'Audit device feeds, issuance queues, and supply cadence.',
+    href: '/analytics'
   },
   {
-    title: 'Admin',
-    description: 'Whitelist devices and operate carbon issuance workflows.',
-    href: '/admin',
-    cta: 'Open admin'
+    title: 'Admin Ops',
+    copy: 'Whitelist devices and orchestrate verified carbon mints.',
+    href: '/admin'
   }
+];
+
+const highlights = [
+  { label: 'Impact Chains', detail: 'Device-signed proofs anchor every issuance.' },
+  { label: 'Composable Markets', detail: 'Plug liquidity into Monad-native RWA protocols.' },
+  { label: 'Community Operated', detail: 'RWAvangers stewards upgrades and emergency tooling.' }
 ];
 
 export default function Home() {
   const { status, metrics } = useApp();
 
   return (
-    <div className="flex flex-col gap-10">
-      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="flex flex-col justify-center gap-6">
-          <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-            Blend liquidity with real-world energy intelligence.
+    <div className="space-y-24">
+      <section className="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="space-y-10">
+          <span className="inline-flex items-center rounded-full bg-white/10 px-5 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
+            RWAvangers · CarbonBlitz
+          </span>
+          <h2 className="text-4xl font-semibold leading-tight text-white md:text-6xl">
+            Monad-native liquidity for verifiable climate impact.
           </h2>
-          <p className="max-w-xl text-base text-monad-offwhite/70">
-            CarbonBlitz syncs smart device telemetry with Monad-native AMMs to issue verifiable carbon credits and deep
-            liquidity for USDC-backed markets.
+          <p className="max-w-2xl text-lg text-white/70">
+            CarbonBlitz transforms high-fidelity device telemetry into programmable carbon liquidity. The RWAvangers
+            collective coordinates swaps, vaults, and issuance workflows with transparent on-chain guarantees.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
               to="/swap"
-              className="rounded-full border border-monad-purple/30 bg-white/10 px-6 py-2 text-sm font-semibold text-monad-offwhite transition hover:border-monad-berry/40 hover:bg-monad-berry/20"
+              className="rounded-full bg-gradient-to-r from-[#836EF9] to-[#A0055D] px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-[#836EF9]/40 transition hover:brightness-110"
             >
-              Launch App
+              Launch Swap
+            </Link>
+            <Link
+              to="/analytics"
+              className="rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white/80 transition hover:text-white"
+            >
+              View Analytics
             </Link>
           </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60">Network</p>
+              <p className="mt-3 text-2xl font-semibold text-white">Monad Testnet</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60">Wallet State</p>
+              <p className="mt-3 text-2xl font-semibold text-white">{status.message}</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60">CBLTZ Supply</p>
+              <p className="mt-3 text-2xl font-semibold text-white">{metrics.supply}</p>
+            </div>
+          </div>
         </div>
-        <div className="rounded-3xl border border-monad-purple/20 bg-[linear-gradient(160deg,rgba(32,0,82,0.75),rgba(14,16,15,0.9))] p-6 shadow-xl">
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-monad-offwhite/60">
-            <span>Status</span>
-            <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
-                status.connected
-                  ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-                  : 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-              }`}
+
+        <div className="space-y-6 rounded-[32px] border border-white/10 bg-white/5 p-8 backdrop-blur-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold uppercase tracking-[0.35em] text-white/60">Impact Feed</span>
+            <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.4em] ${
+              status.connected ? 'bg-emerald-400/20 text-emerald-200' : 'bg-rose-400/20 text-rose-200'
+            }`}
             >
-              {status.message}
+              {status.connected ? 'Live' : 'Offline'}
             </span>
           </div>
-          <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-monad-offwhite/50">CBLTZ Supply</p>
-            <p className="mt-3 text-4xl font-semibold">{metrics.supply}</p>
+          <div className="space-y-6">
+            {highlights.map((item) => (
+              <article key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-white">{item.label}</h3>
+                <p className="mt-3 text-sm text-white/70">{item.detail}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="rounded-3xl border border-monad-purple/25 bg-monad-blue/40 p-8 shadow-lg backdrop-blur">
-        <header className="flex flex-col gap-2 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-xl font-semibold">Monad-first liquidity and carbon issuance</h3>
-          <span className="rounded-full border border-monad-purple/30 bg-monad-berry/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-monad-offwhite/80">
-            Start
-          </span>
+      <section className="space-y-10">
+        <header className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/50">Product Suite</p>
+          <h3 className="text-3xl font-semibold text-white">Everything you need to run climate-positive liquidity.</h3>
+          <p className="max-w-2xl text-sm text-white/70">
+            Each module is designed to feel cinematic yet responsive—mirroring Monad’s performance while staying grounded
+            in transparent carbon accounting.
+          </p>
         </header>
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {cards.map((card) => (
-            <div key={card.title} className="rounded-2xl border border-monad-purple/25 bg-monad-black/70 p-5 shadow-lg">
-              <h4 className="text-lg font-semibold">{card.title}</h4>
-              <p className="mt-2 text-sm text-monad-offwhite/65">{card.description}</p>
-              <Link
-                to={card.href}
-                className="mt-6 inline-flex items-center rounded-full bg-gradient-to-r from-monad-berry to-monad-purple px-4 py-2 text-sm font-semibold shadow-glow transition hover:opacity-90"
-              >
-                {card.cta}
-              </Link>
-            </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {modules.map((module) => (
+            <Link
+              key={module.title}
+              to={module.href}
+              className="group relative overflow-hidden rounded-[28px] border border-white/10 bg-white/5 p-8 backdrop-blur-lg transition hover:border-white/30"
+            >
+              <div className="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-[radial-gradient(circle,#836EF9_0%,rgba(131,110,249,0)_70%)] opacity-40 transition group-hover:scale-110" />
+              <div className="relative space-y-4">
+                <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-white">
+                  {module.title}
+                </span>
+                <p className="text-base text-white/75">{module.copy}</p>
+                <span className="inline-flex items-center text-sm font-semibold text-white transition group-hover:tracking-[0.2em]">
+                  Enter →
+                </span>
+              </div>
+            </Link>
           ))}
         </div>
       </section>

@@ -1,4 +1,5 @@
 import React from 'react';
+import XPWindow from '../components/XPWindow.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 export default function Analytics() {
@@ -12,28 +13,32 @@ export default function Analytics() {
   ];
 
   return (
-    <section className="rounded-3xl border border-monad-purple/25 bg-monad-black/70 p-8 shadow-xl backdrop-blur">
-      <header className="flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-2xl font-semibold">Carbon Analytics</h3>
-        <span
-          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
-            status.connected
-              ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-              : 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-          }`}
-        >
-          {status.message}
-        </span>
-      </header>
+    <XPWindow
+      title="Analytics Monitor"
+      icon="/logo/monad_rwa_logo.png"
+      bodyClassName="p-0"
+      footer={`Status: ${status.message}`}
+    >
+      <div className="space-y-4 p-6">
+        <div className="rounded border border-xpGray bg-white/95 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <h3 className="text-[14px] font-semibold text-[#0c3a94]">Telemetry overview</h3>
+          <p className="mt-1 text-[#4b4b4b]">
+            Device activity, mint readiness, and energy throughput appear here once your wallet unlocks the CarbonBlitz console.
+          </p>
+        </div>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        {cards.map((card) => (
-          <article key={card.title} className="rounded-2xl border border-white/10 bg-black/30 p-5 shadow">
-            <h4 className="text-sm font-semibold text-monad-offwhite/70">{card.title}</h4>
-            <p className="mt-2 text-xl font-semibold">{card.value}</p>
-          </article>
-        ))}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {cards.map((card) => (
+            <article
+              key={card.title}
+              className="rounded border border-[#d0d7ea] bg-white/90 px-4 py-3 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+            >
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]">{card.title}</h4>
+              <p className="mt-2 text-lg font-semibold text-[#1b1b1b]">{card.value}</p>
+            </article>
+          ))}
+        </div>
       </div>
-    </section>
+    </XPWindow>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { formatUnits } from 'viem';
+import XPWindow from '../components/XPWindow.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 export default function Swap() {
@@ -9,7 +10,6 @@ export default function Swap() {
     updateSelectedTokens,
     openTokenDrawer,
     wallet,
-    status,
     callContract,
     parseUnits,
     pairInfo,
@@ -52,6 +52,41 @@ export default function Swap() {
     if (!payTokenBalance) return false;
     return parsedPayAmount > (payTokenBalance.raw ?? 0n);
   }, [parsedPayAmount, payTokenBalance]);
+
+  const pairTokens = useMemo(() => {
+    if (!pairInfo) return null;
+    const tokenMap = new Map(tokens.map((token) => [token.address.toLowerCase(), token]));
+    const token0 = tokenMap.get(pairInfo.token0?.toLowerCase?.() ?? '');
+    const token1 = tokenMap.get(pairInfo.token1?.toLowerCase?.() ?? '');
+    if (!token0 || !token1) return null;
+    return { token0, token1 };
+  }, [pairInfo, tokens]);
+
+  const reserveSummary = useMemo(() => {
+    if (!pairInfo || !pairTokens) return [];
+
+    const formatReserve = (raw, tokenMeta) => {
+      try {
+        const value = Number.parseFloat(formatUnits(raw, tokenMeta.decimals ?? 18));
+        if (!Number.isFinite(value)) return '--';
+        return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+      } catch (error) {
+        console.warn('Reserve format failed', error);
+        return '--';
+      }
+    };
+
+    return [
+      {
+        label: `${pairTokens.token0.symbol} reserve`,
+        value: formatReserve(pairInfo.reserve0, pairTokens.token0)
+      },
+      {
+        label: `${pairTokens.token1.symbol} reserve`,
+        value: formatReserve(pairInfo.reserve1, pairTokens.token1)
+      }
+    ];
+  }, [pairInfo, pairTokens]);
 
   const handleSwitch = () => {
     updateSelectedTokens(({ pay, receive }) => ({ pay: receive, receive: pay }));
@@ -226,96 +261,146 @@ export default function Swap() {
   }, [payAmount, parseUnits, pairInfo, selectedTokens]);
 
   return (
-    <section className="rounded-3xl border border-monad-purple/25 bg-monad-black/70 p-8 shadow-xl backdrop-blur">
-      <header className="flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-2xl font-semibold">Swap</h3>
-        <span
-          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
-            status.connected
-              ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-              : 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-          }`}
-        >
-          {status.message}
-        </span>
-      </header>
+    <XPWindow
+      title="Swap Desk"
+      icon="/logo/monad_rwa_logo.png"
+      bodyClassName="p-0"
+    >
+      <div className="grid gap-4 p-6 lg:grid-cols-[minmax(0,420px)_minmax(0,260px)]">
+        <div className="space-y-4">
+          <div className="rounded border border-xpGray bg-white/95 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <header className="flex items-center justify-between">
+              <h2 className="text-[15px] font-semibold text-[#0c3a94]">Token swap</h2>
+              <span className="text-[11px] text-[#1b1b1b]">
+                Balance:
+                {' '}
+                <strong>{formattedBalance}</strong>
+              </span>
+            </header>
+            <div className="mt-3 space-y-3">
+              <div className="rounded border border-[#94a3c4] bg-[#f3f7ff] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+                <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]">
+                  <span>From wallet</span>
+                  <button
+                    type="button"
+                    onClick={() => handleTokenPick('pay')}
+                    className="text-[11px] font-semibold text-[#1c62d1] underline decoration-dotted hover:text-[#0b3b9e]"
+                  >
+                    Change
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => handleTokenPick('pay')}
+                    className="flex items-center gap-2 rounded border border-[#7b8dbd] bg-white px-3 py-2 text-left text-sm font-semibold text-[#103c9c] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:border-[#1c62d1]"
+                  >
+                    {selectedTokens.pay ? (
+                      <span className="flex flex-col leading-tight">
+                        <span>{selectedTokens.pay.symbol}</span>
+                        <span className="text-[11px] font-normal text-[#4b4b4b]">{selectedTokens.pay.name}</span>
+                      </span>
+                    ) : (
+                      <span>Select token</span>
+                    )}
+                  </button>
+                  <input
+                    value={payAmount}
+                    onChange={(event) => setPayAmount(event.target.value)}
+                    placeholder="0.00"
+                    inputMode="decimal"
+                    className="w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-right text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+                  />
+                </div>
+                <p className="mt-2 text-[11px] text-[#4b4b4b]">Wallet balance: {formattedBalance}</p>
+              </div>
 
-      <div className="mt-8 space-y-6 rounded-3xl border border-monad-purple/25 bg-[linear-gradient(160deg,rgba(14,16,15,0.92),rgba(32,0,82,0.55))] p-6 shadow-lg">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-monad-offwhite/80">Pay</label>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-black/20 px-4 py-3">
-            <input
-              value={payAmount}
-              onChange={(event) => setPayAmount(event.target.value)}
-              type="number"
-              min="0"
-              placeholder="0.0"
-              className="w-full bg-transparent text-2xl font-semibold text-monad-offwhite placeholder:text-monad-offwhite/40 focus:outline-none"
-            />
+              <button
+                type="button"
+                onClick={handleSwitch}
+                className="mx-auto flex items-center gap-2 rounded border border-[#7b8dbd] bg-gradient-to-b from-white to-[#dfe7ff] px-3 py-1 text-[12px] font-semibold text-[#0c3a94] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition hover:border-[#1c62d1]"
+              >
+                ⇅ Swap order
+              </button>
+
+              <div className="rounded border border-[#94a3c4] bg-white px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+                <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]">
+                  <span>Receive in wallet</span>
+                  <button
+                    type="button"
+                    onClick={() => handleTokenPick('receive')}
+                    className="text-[11px] font-semibold text-[#1c62d1] underline decoration-dotted hover:text-[#0b3b9e]"
+                  >
+                    Change
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => handleTokenPick('receive')}
+                    className="flex items-center gap-2 rounded border border-[#7b8dbd] bg-[#f5f5f5] px-3 py-2 text-left text-sm font-semibold text-[#103c9c] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:border-[#1c62d1]"
+                  >
+                    {selectedTokens.receive ? (
+                      <span className="flex flex-col leading-tight">
+                        <span>{selectedTokens.receive.symbol}</span>
+                        <span className="text-[11px] font-normal text-[#4b4b4b]">{selectedTokens.receive.name}</span>
+                      </span>
+                    ) : (
+                      <span>Select token</span>
+                    )}
+                  </button>
+                  <div className="flex min-h-[40px] w-full items-center justify-end rounded border border-[#a9b3c9] bg-[#f4f4f4] px-3 py-2 text-sm font-semibold text-[#1b1b1b]">
+                    {receivePreview}
+                  </div>
+                </div>
+                <p className="mt-2 text-[11px] text-[#4b4b4b]">Estimated output after 0.3% pool fee.</p>
+              </div>
+            </div>
+            {insufficientBalance && (
+              <p className="mt-3 rounded border border-[#d69ca1] bg-[#fef2f2] px-3 py-2 text-xs text-[#b91c1c]">
+                Insufficient balance for this swap.
+              </p>
+            )}
             <button
               type="button"
-              onClick={() => handleTokenPick('pay')}
-              className="rounded-xl border border-monad-purple/30 bg-monad-blue/70 px-4 py-2 text-sm font-semibold transition hover:border-monad-berry/40 hover:bg-monad-berry/30"
+              onClick={handleSwap}
+              disabled={isSwapping}
+              className="mt-4 w-full rounded border border-[#0b3b9e] bg-gradient-to-b from-[#5099ff] to-[#1c62d1] px-4 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {selectedTokens.pay?.symbol ?? 'Select'}
-            </button>
-          </div>
-          <span className="text-xs text-monad-offwhite/50">
-            Balance:
-            {' '}
-            {formattedBalance}
-          </span>
-          {insufficientBalance && (
-            <span className="block text-xs text-amber-300/80">Insufficient balance.</span>
-          )}
-        </div>
-
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={handleSwitch}
-            className="rounded-full border border-white/10 bg-white/10 p-3 text-lg transition hover:border-monad-berry/40 hover:bg-monad-berry/25"
-            aria-label="Switch pair"
-          >
-            ⇅
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-monad-offwhite/80">Receive</label>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-black/20 px-4 py-3">
-            <input
-              type="text"
-              readOnly
-              placeholder="0.0"
-              value={receivePreview === '--' ? '' : receivePreview}
-              className="w-full bg-transparent text-2xl font-semibold text-monad-offwhite placeholder:text-monad-offwhite/40 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => handleTokenPick('receive')}
-              className="rounded-xl border border-monad-purple/30 bg-monad-blue/70 px-4 py-2 text-sm font-semibold transition hover:border-monad-berry/40 hover:bg-monad-berry/30"
-            >
-              {selectedTokens.receive?.symbol ?? 'Select'}
+              {isSwapping ? 'Swapping…' : 'Execute swap'}
             </button>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleSwap}
-          className="w-full rounded-full bg-gradient-to-r from-monad-berry to-monad-purple px-4 py-3 text-center text-sm font-semibold shadow-glow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={!wallet.address || isSwapping || insufficientBalance || parsedPayAmount === 0n}
-        >
-          {wallet.address ? (isSwapping ? 'Swapping…' : 'Swap') : 'Connect wallet'}
-        </button>
+        <aside className="space-y-4">
+          <div className="rounded border border-xpGray bg-white/90 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h3 className="text-[14px] font-semibold text-[#0c3a94]">Pool snapshot</h3>
+            {reserveSummary.length ? (
+              <ul className="mt-2 space-y-2">
+                {reserveSummary.map((entry) => (
+                  <li key={entry.label} className="flex items-center justify-between rounded border border-[#d0d7ea] bg-[#f3f7ff] px-3 py-2">
+                    <span className="font-semibold text-[#0c3a94]">{entry.label}</span>
+                    <span>{entry.value}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 rounded border border-dashed border-[#9aa6c5] bg-[#f8fbff] px-3 py-4 text-center text-[11px] text-[#4b4b4b]">
+                Pool reserves load after the first on-chain sync.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded border border-xpGray bg-white/90 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h3 className="text-[14px] font-semibold text-[#0c3a94]">Swap checklist</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] text-[#4b4b4b]">
+              <li>Wallet must hold sufficient {selectedTokens.pay?.symbol ?? 'token'} balance.</li>
+              <li>Ensure pool reserves are synced for accurate quotes.</li>
+              <li>Final output may differ slightly after confirmation.</li>
+            </ul>
+          </div>
+        </aside>
       </div>
-
-      {tokens.length === 0 && (
-        <p className="mt-6 text-sm text-amber-300/80">
-          Token list is empty. Populate `config/contracts.json` to enable swapping.
-        </p>
-      )}
-    </section>
+    </XPWindow>
   );
 }

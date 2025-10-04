@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { formatUnits } from 'viem';
+import XPWindow from '../components/XPWindow.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 export default function Liquidity() {
@@ -42,6 +43,14 @@ export default function Liquidity() {
     if (!decimalPart) return integerPart;
     return `${integerPart}.${decimalPart.slice(0, Math.min(6, decimalPart.length))}`;
   };
+
+  const usdcHoldings = useMemo(() => formattedBalance(usdcToken, usdcBalance), [usdcToken, usdcBalance]);
+  const cbltzHoldings = useMemo(() => formattedBalance(cbltzToken, cbltzBalance), [cbltzToken, cbltzBalance]);
+  const poolRatioText = useMemo(() => {
+    if (!poolRatio || !Number.isFinite(poolRatio)) return '--';
+    const ratio = Math.max(poolRatio, 0);
+    return `1 ${usdcToken?.symbol ?? 'USDC'} ≈ ${ratio.toFixed(4)} ${cbltzToken?.symbol ?? 'CBLTZ'}`;
+  }, [poolRatio, usdcToken, cbltzToken]);
 
   const parsedUsdc = useMemo(() => {
     if (!usdcToken || !amountUsdc) return 0n;
@@ -221,114 +230,109 @@ export default function Liquidity() {
   };
 
   return (
-    <section className="rounded-3xl border border-monad-purple/25 bg-monad-black/70 p-8 shadow-xl backdrop-blur">
-      <header className="flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-2xl font-semibold">Provide Liquidity</h3>
-        <span
-          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
-            status.connected
-              ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-              : 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-          }`}
+    <XPWindow
+      title="Liquidity Manager"
+      icon="/logo/monad_rwa_logo.png"
+      bodyClassName="p-0"
+      footer={`Status: ${status.message}`}
+    >
+      <div className="grid gap-4 p-6 lg:grid-cols-[minmax(0,420px)_minmax(0,260px)]">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 rounded border border-xpGray bg-white/95 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"
         >
-          {status.message}
-        </span>
-      </header>
+          <header className="flex flex-col gap-1 text-[#0c3a94]">
+            <h2 className="text-[15px] font-semibold">Provide liquidity</h2>
+            <span className="text-[11px] text-[#1b1b1b]">{poolRatioText}</span>
+          </header>
 
-      <form onSubmit={handleSubmit} className="mt-8 grid gap-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-monad-offwhite/80" htmlFor="amount-usdc">
-            USDC amount
-          </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-monad-purple/25 bg-black/30 px-4 py-3">
-            <input
-              id="amount-usdc"
-              value={amountUsdc}
-              onChange={(event) => handleUsdcChange(event.target.value)}
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.0"
-              className="w-full bg-transparent text-lg font-semibold text-monad-offwhite placeholder:text-monad-offwhite/40 focus:outline-none"
-            />
-            <span className="rounded-full border border-monad-purple/25 bg-monad-blue/60 px-3 py-1 text-xs font-semibold text-monad-offwhite/80">
-              USDC
-            </span>
+          <div className="space-y-3">
+            <div className="rounded border border-[#94a3c4] bg-[#f3f7ff] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]">
+                <span>{usdcToken?.symbol ?? 'USDC'} amount</span>
+                <span className="text-[#4b4b4b]">Balance: {usdcHoldings}</span>
+              </div>
+              <input
+                id="usdc-amount"
+                value={amountUsdc}
+                onChange={(event) => handleUsdcChange(event.target.value)}
+                type="number"
+                min="0"
+                step="0.0001"
+                placeholder="0.00"
+                className="mt-2 w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-right text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+              />
+              {insufficientUsdc && (
+                <p className="mt-2 rounded border border-[#d69ca1] bg-[#fef2f2] px-3 py-2 text-[11px] text-[#b91c1c]">
+                  Insufficient {usdcToken?.symbol ?? 'USDC'} balance.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded border border-[#94a3c4] bg-white px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0c3a94]">
+                <span>{cbltzToken?.symbol ?? 'CBLTZ'} amount</span>
+                <span className="text-[#4b4b4b]">Balance: {cbltzHoldings}</span>
+              </div>
+              <input
+                id="cbltz-amount"
+                value={amountCbltz}
+                onChange={(event) => handleCbltzChange(event.target.value)}
+                type="number"
+                min="0"
+                step="0.0001"
+                placeholder="0.00"
+                className="mt-2 w-full rounded border border-[#7b7b7b] bg-white px-3 py-2 text-right text-sm text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] focus:border-[#245edb] focus:outline-none"
+              />
+              {insufficientCbltz && (
+                <p className="mt-2 rounded border border-[#d69ca1] bg-[#fef2f2] px-3 py-2 text-[11px] text-[#b91c1c]">
+                  Insufficient {cbltzToken?.symbol ?? 'CBLTZ'} balance.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded border border-[#d0d7ea] bg-[#f3f7ff] px-3 py-3 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+              <p className="font-semibold text-[#0c3a94]">Auto-balance helper</p>
+              <p className="mt-1 text-[#4b4b4b]">
+                Update either side and the other field syncs to match on-chain reserves.
+              </p>
+            </div>
           </div>
-          <span className="text-xs text-monad-offwhite/50">
-            Balance:
-            {' '}
-            {formattedBalance(usdcToken, usdcBalance)}
-          </span>
-          {insufficientUsdc && (
-            <span className="block text-xs text-amber-300/80">Insufficient USDC balance.</span>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-monad-offwhite/80" htmlFor="amount-cbltz">
-            CorbanBlitz amount
-          </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-monad-purple/25 bg-black/30 px-4 py-3">
-            <input
-              id="amount-cbltz"
-              value={amountCbltz}
-              onChange={(event) => handleCbltzChange(event.target.value)}
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.0"
-              className="w-full bg-transparent text-lg font-semibold text-monad-offwhite placeholder:text-monad-offwhite/40 focus:outline-none"
-            />
-            <span className="rounded-full border border-monad-purple/25 bg-monad-berry/40 px-3 py-1 text-xs font-semibold text-monad-offwhite/80">
-              CBLTZ
-            </span>
-          </div>
-          <span className="text-xs text-monad-offwhite/50">
-            Balance:
-            {' '}
-            {formattedBalance(cbltzToken, cbltzBalance)}
-          </span>
-          {insufficientCbltz && (
-            <span className="block text-xs text-amber-300/80">Insufficient CBLTZ balance.</span>
-          )}
-        </div>
-
-        <div className="sm:col-span-2 space-y-4 rounded-3xl border border-dashed border-monad-purple/30 bg-black/30 px-6 py-5">
-          <p className="text-sm text-monad-offwhite/70">
-            Ensure you transfer the quoted token amounts directly to the pair contract before submitting. The mint call
-            will finalise your position and issue LP tokens to your connected wallet.
-          </p>
-          {poolRatio && (
-            <p className="text-xs text-monad-offwhite/60">
-              Current pool ratio suggests ~{poolRatio.toFixed(2)} CBLTZ per USDC for balanced deposits.
-            </p>
-          )}
-        </div>
-
-        <div className="sm:col-span-2">
           <button
             type="submit"
-            className="w-full rounded-full bg-gradient-to-r from-monad-berry to-monad-purple px-4 py-3 text-center text-sm font-semibold shadow-glow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={
-              !wallet.address
-              || isSubmitting
-              || insufficientUsdc
-              || insufficientCbltz
-              || parsedUsdc === 0n
-              || parsedCbltz === 0n
-            }
+            className="w-full rounded border border-[#0b3b9e] bg-gradient-to-b from-[#5099ff] to-[#1c62d1] px-4 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={isSubmitting}
           >
-            {wallet.address ? (isSubmitting ? 'Minting…' : 'Mint LP tokens') : 'Connect wallet'}
+            {isSubmitting ? 'Processing…' : 'Seed liquidity'}
           </button>
-        </div>
-      </form>
+        </form>
 
-      {tokens.length === 0 && (
-        <p className="mt-6 text-sm text-amber-300/80">
-          Token list is empty. Populate `config/contracts.json` to enable liquidity provisioning.
-        </p>
-      )}
-    </section>
+        <aside className="space-y-4">
+          <div className="rounded border border-xpGray bg-white/90 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h3 className="text-[14px] font-semibold text-[#0c3a94]">Wallet balances</h3>
+            <dl className="mt-2 space-y-2">
+              <div className="flex items-center justify-between rounded border border-[#d0d7ea] bg-[#f3f7ff] px-3 py-2">
+                <dt className="font-semibold text-[#0c3a94]">{usdcToken?.symbol ?? 'USDC'}</dt>
+                <dd>{usdcHoldings}</dd>
+              </div>
+              <div className="flex items-center justify-between rounded border border-[#d0d7ea] bg-[#f9fbff] px-3 py-2">
+                <dt className="font-semibold text-[#0c3a94]">{cbltzToken?.symbol ?? 'CBLTZ'}</dt>
+                <dd>{cbltzHoldings}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="rounded border border-xpGray bg-white/90 p-4 text-[12px] text-[#1b1b1b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h3 className="text-[14px] font-semibold text-[#0c3a94]">Pool insights</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] text-[#4b4b4b]">
+              <li>Pair status: {pairInfo ? 'Ready for deposits' : 'Awaiting pair reserves'}.</li>
+              <li>Transfers execute sequentially to ensure balanced deposits.</li>
+              <li>Receipts appear in your wallet history once both legs settle.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </XPWindow>
   );
 }

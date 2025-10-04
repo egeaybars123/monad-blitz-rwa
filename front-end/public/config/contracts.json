@@ -7,8 +7,7 @@
   },
   "admin": {
     "whitelist": [
-      "0x106a67e1C0474c29935D6521EA59470b1e1fB350",
-      "0x10895D02C9e07795402628a63ED64Bd9bAa15dcE"
+      "0x106a67e1C0474c29935D6521EA59470b1e1fB350"
     ]
   },
   "tokens": {

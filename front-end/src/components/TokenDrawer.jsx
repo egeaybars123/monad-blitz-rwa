@@ -24,21 +24,21 @@ export default function TokenDrawer() {
   if (!drawerState.open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-5 backdrop-blur">
-      <div className="w-full max-w-lg space-y-4 rounded-3xl border border-monad-purple/40 bg-monad-black/95 p-6 shadow-2xl">
-        <header className="flex items-center justify-between text-sm font-semibold">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0b0b0b]/35 px-5 backdrop-blur-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-md border-2 border-xpGray bg-white shadow-[0_20px_80px_rgba(0,0,0,0.25)]">
+        <header className="flex items-center justify-between bg-gradient-to-r from-xpBlueDark via-xpBlue to-xpBlueLight px-4 py-2 text-sm font-semibold text-white">
           <h4>{drawerState.title}</h4>
           <button
             type="button"
             onClick={closeTokenDrawer}
-            className="rounded-full bg-white/10 px-3 py-1 text-lg leading-none"
+            className="flex h-6 w-6 items-center justify-center rounded-sm border border-white/40 bg-white/30 text-base leading-none shadow-[inset_0_0_0_1px_rgba(0,0,0,0.25)] transition hover:bg-white/40"
           >
             ×
           </button>
         </header>
-        <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+        <div className="max-h-72 space-y-2 overflow-y-auto bg-gradient-to-br from-white via-xpCream to-[#e3e3e3] px-4 py-4 pr-3 text-[#1b1b1b]">
           {sortedTokens.length === 0 && (
-            <p className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-center text-xs text-monad-offwhite/60">
+            <p className="rounded border border-dashed border-[#9aa6c5] bg-white/80 px-4 py-3 text-center text-[12px] text-[#4b4b4b]">
               No tokens available for this selection.
             </p>
           )}
@@ -47,13 +47,13 @@ export default function TokenDrawer() {
               key={token.address}
               type="button"
               onClick={() => selectToken(token)}
-              className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-transparent bg-white/5 px-4 py-3 text-left text-sm transition hover:border-monad-purple/40 hover:bg-monad-berry/15"
+              className="flex w-full items-center justify-between rounded border border-[#d0d7ea] bg-white/90 px-3 py-2 text-left text-[12px] font-semibold text-[#0c3a94] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition hover:border-[#1c62d1] hover:bg-[#e6f0ff]"
             >
-              <div>
-                <strong className="block text-base">{token.symbol}</strong>
-                <span className="block text-xs text-monad-offwhite/60">{token.name}</span>
-              </div>
-              <span className="text-xs text-monad-offwhite/60">{token.address.slice(0, 6)}…{token.address.slice(-4)}</span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-[13px]">{token.symbol}</span>
+                <span className="text-[11px] font-normal text-[#4b4b4b]">{token.name}</span>
+              </span>
+              <span className="text-[11px] font-normal text-[#4b4b4b]">{token.address.slice(0, 6)}…{token.address.slice(-4)}</span>
             </button>
           ))}
         </div>
