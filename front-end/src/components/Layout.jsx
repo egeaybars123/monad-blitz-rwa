@@ -7,6 +7,7 @@ import XPDialog from './XPDialog.jsx';
 import { useApp } from '../state/AppProvider.jsx';
 
 const NAV_ITEMS = [
+  { to: '/carbonblitz', label: 'CarbonBlitz' },
   { to: '/swap', label: 'Swap' },
   { to: '/liquidity', label: 'Liquidity' },
   { to: '/analytics', label: 'Analytics' },
