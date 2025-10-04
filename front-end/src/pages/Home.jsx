@@ -5,7 +5,7 @@ import { useApp } from '../state/AppProvider.jsx';
 const cards = [
   {
     title: 'Swap',
-    description: 'Trade USD, TRY, and CBLTZ with Monad-native liquidity routes.',
+    description: 'Swap between USDC and CBLTZ with direct pair execution.',
     href: '/swap',
     cta: 'Go to swap'
   },
@@ -41,7 +41,7 @@ export default function Home() {
           </h2>
           <p className="max-w-xl text-base text-monad-offwhite/70">
             CarbonBlitz syncs smart device telemetry with Monad-native AMMs to issue verifiable carbon credits and deep
-            liquidity for USD and TRY stables.
+            liquidity for USDC-backed markets.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link

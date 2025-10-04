@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { formatUnits } from 'viem';
 import { useApp } from '../state/AppProvider.jsx';
 
 export default function Swap() {
@@ -10,15 +11,47 @@ export default function Swap() {
     wallet,
     status,
     callContract,
-    parseUnits
+    parseUnits,
+    pairInfo,
+    refreshMetrics,
+    balances,
+    refreshBalances,
+    writeTokenContract,
+    publicClient,
+    pairContract
   } = useApp();
   const [payAmount, setPayAmount] = useState('');
-  const [priceImpact] = useState('--');
+  const [receivePreview, setReceivePreview] = useState('--');
+  const [expectedOut, setExpectedOut] = useState(0n);
+  const [isSwapping, setIsSwapping] = useState(false);
 
-  const routeText = useMemo(() => {
-    if (!selectedTokens.pay || !selectedTokens.receive) return '--';
-    return `${selectedTokens.pay.symbol} → ${selectedTokens.receive.symbol}`;
-  }, [selectedTokens]);
+  const payTokenBalance = useMemo(() => {
+    if (!selectedTokens.pay) return null;
+    return balances[selectedTokens.pay.address.toLowerCase()] ?? null;
+  }, [balances, selectedTokens.pay]);
+
+  const formattedBalance = useMemo(() => {
+    if (!selectedTokens.pay || !payTokenBalance) return '--';
+    const { formatted = '0' } = payTokenBalance;
+    const [integerPart, decimalPart = ''] = formatted.split('.');
+    if (!decimalPart) return integerPart;
+    return `${integerPart}.${decimalPart.slice(0, Math.min(6, decimalPart.length))}`;
+  }, [payTokenBalance, selectedTokens.pay]);
+
+  const parsedPayAmount = useMemo(() => {
+    if (!selectedTokens.pay || !payAmount) return 0n;
+    try {
+      return parseUnits(payAmount, selectedTokens.pay.decimals ?? 18);
+    } catch (error) {
+      console.warn('Amount parse failed', error);
+      return 0n;
+    }
+  }, [payAmount, parseUnits, selectedTokens.pay]);
+
+  const insufficientBalance = useMemo(() => {
+    if (!payTokenBalance) return false;
+    return parsedPayAmount > (payTokenBalance.raw ?? 0n);
+  }, [parsedPayAmount, payTokenBalance]);
 
   const handleSwitch = () => {
     updateSelectedTokens(({ pay, receive }) => ({ pay: receive, receive: pay }));
@@ -46,20 +79,144 @@ export default function Swap() {
       alert('Enter an amount to pay.');
       return;
     }
+    if (!pairInfo || !pairContract?.address) {
+      alert('Pair information unavailable.');
+      return;
+    }
+    if (expectedOut <= 0n) {
+      alert('Unable to derive output amount. Check reserves or input.');
+      return;
+    }
+    if (insufficientBalance) {
+      alert('Insufficient balance for this swap.');
+      return;
+    }
 
-    const amountIn = parseUnits(payAmount, selectedTokens.pay.decimals ?? 18);
-    const path = [selectedTokens.pay.address, selectedTokens.receive.address];
-    const minAmountOut = 0n;
-    const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
+    const payAddress = selectedTokens.pay.address.toLowerCase();
+    const receiveAddress = selectedTokens.receive.address.toLowerCase();
+    const token0 = pairInfo.token0.toLowerCase();
+    const token1 = pairInfo.token1.toLowerCase();
 
-    await callContract('uniswapV2Router', 'swapExactTokensForTokens', [
-      amountIn,
-      minAmountOut,
-      path,
-      wallet.address,
-      deadline
-    ]);
+    let amount0Out = 0n;
+    let amount1Out = 0n;
+
+    if (payAddress === token0 && receiveAddress === token1) {
+      amount1Out = expectedOut;
+    } else if (payAddress === token1 && receiveAddress === token0) {
+      amount0Out = expectedOut;
+    } else {
+      alert('Selected tokens do not align with the configured pair.');
+      return;
+    }
+
+    try {
+      setIsSwapping(true);
+      const amountIn = parsedPayAmount;
+      const transferHash = await writeTokenContract(selectedTokens.pay, 'transfer', [
+        pairContract.address,
+        amountIn
+      ]);
+
+      if (!transferHash) {
+        setIsSwapping(false);
+        return;
+      }
+
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: transferHash });
+      }
+
+      const swapHash = await callContract('uniswapV2Pair', 'swap', [
+        amount0Out,
+        amount1Out,
+        wallet.address,
+        '0x'
+      ]);
+
+      if (swapHash && publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: swapHash });
+      }
+
+      setPayAmount('');
+      setReceivePreview('--');
+      setExpectedOut(0n);
+      await refreshMetrics();
+      await refreshBalances();
+    } finally {
+      setIsSwapping(false);
+    }
   };
+
+  useEffect(() => {
+    if (!pairInfo || !selectedTokens.pay || !selectedTokens.receive) {
+      setReceivePreview('--');
+      setExpectedOut(0n);
+      return;
+    }
+
+    const payAddress = selectedTokens.pay.address.toLowerCase();
+    const receiveAddress = selectedTokens.receive.address.toLowerCase();
+    const token0 = pairInfo.token0.toLowerCase();
+    const token1 = pairInfo.token1.toLowerCase();
+
+    const mapReserves = () => {
+      if (payAddress === token0 && receiveAddress === token1) {
+        return { reserveIn: pairInfo.reserve0, reserveOut: pairInfo.reserve1 };
+      }
+      if (payAddress === token1 && receiveAddress === token0) {
+        return { reserveIn: pairInfo.reserve1, reserveOut: pairInfo.reserve0 };
+      }
+      return null;
+    };
+
+    const reserves = mapReserves();
+    if (!reserves) {
+      setReceivePreview('--');
+      setExpectedOut(0n);
+      return;
+    }
+
+    if (!payAmount || Number(payAmount) <= 0) {
+      setReceivePreview('--');
+      setExpectedOut(0n);
+      return;
+    }
+
+    try {
+      const amountIn = parseUnits(payAmount, selectedTokens.pay.decimals ?? 18);
+      if (amountIn <= 0n) {
+        setReceivePreview('--');
+        setExpectedOut(0n);
+        return;
+      }
+
+      const amountInWithFee = amountIn * 997n / 1000n;
+      const numerator = amountInWithFee * reserves.reserveOut;
+      const denominator = reserves.reserveIn + amountInWithFee;
+      if (denominator === 0n) {
+        setReceivePreview('--');
+        setExpectedOut(0n);
+        return;
+      }
+
+      const amountOut = numerator / denominator;
+      setExpectedOut(amountOut);
+
+      const previewFloat = Number.parseFloat(
+        formatUnits(amountOut, selectedTokens.receive.decimals ?? 18)
+      );
+      if (Number.isNaN(previewFloat)) {
+        setReceivePreview('--');
+        return;
+      }
+
+      setReceivePreview(previewFloat.toLocaleString('en-US', { maximumFractionDigits: 6 }));
+    } catch (error) {
+      console.error('Preview calculation failed', error);
+      setReceivePreview('--');
+      setExpectedOut(0n);
+    }
+  }, [payAmount, parseUnits, pairInfo, selectedTokens]);
 
   return (
     <section className="rounded-3xl border border-monad-purple/25 bg-monad-black/70 p-8 shadow-xl backdrop-blur">
@@ -96,7 +253,14 @@ export default function Swap() {
               {selectedTokens.pay?.symbol ?? 'Select'}
             </button>
           </div>
-          <span className="text-xs text-monad-offwhite/50">Balance: --</span>
+          <span className="text-xs text-monad-offwhite/50">
+            Balance:
+            {' '}
+            {formattedBalance}
+          </span>
+          {insufficientBalance && (
+            <span className="block text-xs text-amber-300/80">Insufficient balance.</span>
+          )}
         </div>
 
         <div className="flex justify-center">
@@ -117,6 +281,7 @@ export default function Swap() {
               type="text"
               readOnly
               placeholder="0.0"
+              value={receivePreview === '--' ? '' : receivePreview}
               className="w-full bg-transparent text-2xl font-semibold text-monad-offwhite placeholder:text-monad-offwhite/40 focus:outline-none"
             />
             <button
@@ -127,28 +292,17 @@ export default function Swap() {
               {selectedTokens.receive?.symbol ?? 'Select'}
             </button>
           </div>
-          <span className="text-xs text-monad-offwhite/50">Price impact: {priceImpact}</span>
+          <span className="text-xs text-monad-offwhite/50">Preview updates automatically using pool reserves.</span>
         </div>
 
         <button
           type="button"
           onClick={handleSwap}
           className="w-full rounded-full bg-gradient-to-r from-monad-berry to-monad-purple px-4 py-3 text-center text-sm font-semibold shadow-glow transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={!wallet.address}
+          disabled={!wallet.address || isSwapping || insufficientBalance || parsedPayAmount === 0n}
         >
-          {wallet.address ? 'Swap' : 'Connect wallet'}
+          {wallet.address ? (isSwapping ? 'Swapping…' : 'Swap') : 'Connect wallet'}
         </button>
-
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-monad-offwhite/60">
-          <div className="space-y-1">
-            <span className="uppercase tracking-[0.3em]">Pool price</span>
-            <span className="block text-sm font-semibold text-monad-offwhite">--</span>
-          </div>
-          <div className="space-y-1">
-            <span className="uppercase tracking-[0.3em]">Route</span>
-            <span className="block text-sm font-semibold text-monad-offwhite">{routeText}</span>
-          </div>
-        </div>
       </div>
 
       {tokens.length === 0 && (

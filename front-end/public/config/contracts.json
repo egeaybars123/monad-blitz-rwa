@@ -7,27 +7,24 @@
   },
   "admin": {
     "whitelist": [
-      "0x106a67e1C0474c29935D6521EA59470b1e1fB350"
+      "0x106a67e1C0474c29935D6521EA59470b1e1fB350",
+      "0x10895D02C9e07795402628a63ED64Bd9bAa15dcE"
     ]
   },
   "tokens": {
-    "USD": {
+    "USDC": {
       "symbol": "USDC",
       "name": "USD Coin",
       "address": "0x0608c5413F33c6561b612012623A3A26Eb10B8f6",
-      "decimals": 18
-    },
-    "TRY": {
-      "symbol": "TRY",
-      "name": "Mock Turkish Lira",
-      "address": "0x00000000000000000000000000000000TRY0001",
-      "decimals": 18
+      "decimals": 18,
+      "abi": "/abis/erc20.json"
     },
     "CBLTZ": {
       "symbol": "CBLTZ",
-      "name": "CarbonBlitz",
+      "name": "CorbanBlitz",
       "address": "0x9b79231a9D37fdda4B21ACc0Eb503CB06d8c688C",
-      "decimals": 18
+      "decimals": 18,
+      "abi": "/abis/carbonBlitz.json"
     }
   },
   "contracts": {
@@ -39,12 +36,9 @@
       "address": "0x5b191e51db475ecb7d1adfb0dcba28e53426153f",
       "abi": "/abis/uniswapV2Factory.json"
     },
-    "uniswapV2Router": {
-      "address": "0x00000000000000000000000000000000UNI2002",
-      "abi": "/abis/uniswapV2Router.json"
-    },
-    "stablePool": {
-      "address": "0x00000000000000000000000000000000POOL001"
+    "uniswapV2Pair": {
+      "address": "0x17aD1c0Df4e6c7C027f9d1Ad35Ef1D5D72767797",
+      "abi": "/abis/uniswapV2Pair.json"
     }
   }
 }
