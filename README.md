@@ -1,7 +1,3 @@
-
-# Project Title
-
-A brief description of what this project does and who it's for
 # RWAvengers — Carbon Credit Tokenization (Monad Blitz)
 
 A fast, minimal RWA prototype that mints verifiable **carbon credit tokens** on Monad Testnet and exposes a simple front-end for registry/retire flows.
@@ -15,15 +11,19 @@ A fast, minimal RWA prototype that mints verifiable **carbon credit tokens** on 
 
 ---
 
-## 🧱 Architecture (High-level)
+## 🧱 Architecture
 
-![System architecture](/monad-blitz-rwa/images/RWAvengers.jpg)
+[![Image](https://i.hizliresim.com/5mg5saz.jpg)](https://hizliresim.com/5mg5saz)
 
 
-> **MRV = Measurement, Reporting, Verification.** We reference an off-chain attestation (URI or hash) per minted batch and per retirement.
+> **MRV = Measurement, Reporting, Verification.** We reference an off-chain attestation per minted batch and per retirement.
 
 ---
 
-## 📦 Repo Layout
+## Closing & Next Steps
 
-
+- **Ship demo:** Deploy to Monad testnet, pin sample MRV packages, and showcase mint → verify → retire in one session.
+- **Improve attestations:** Add EAS or dedicated signature schemas for attestors; standardize MRV JSON.
+- **Compliance hooks:** Optional allow-lists/KYC adapters for regulated contexts.
+- **Analytics:** Stand up a lightweight indexer and a dashboard for batch inventory and retirement leaderboards.
+- **Contributions welcome:** Open issues or submit a PR with focused improvements (tests, gas nudges, UX polish).
