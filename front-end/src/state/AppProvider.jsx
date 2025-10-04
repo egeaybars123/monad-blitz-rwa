@@ -49,7 +49,7 @@ export function AppProvider({ children }) {
     energyProcessed: '--',
     lastDeviceSync: 'Telemetry feed idle'
   });
-  const [drawerState, setDrawerState] = useState({ open: false, callback: null, title: 'Select token' });
+  const [drawerState, setDrawerState] = useState({ open: false, callback: null, title: 'Select token', exclude: [] });
   const abiCache = useRef(new Map());
 
   const fetchAbi = useCallback(async (path) => {
@@ -205,22 +205,26 @@ export function AppProvider({ children }) {
     };
   }, [evaluateAdminStatus]);
 
-  const openTokenDrawer = useCallback((title, callback) => {
-    setDrawerState({ open: true, callback, title });
+  const openTokenDrawer = useCallback((title, callback, options = {}) => {
+    const { exclude = [] } = options;
+    setDrawerState({ open: true, callback, title, exclude });
   }, []);
 
   const closeTokenDrawer = useCallback(() => {
-    setDrawerState({ open: false, callback: null, title: 'Select token' });
+    setDrawerState({ open: false, callback: null, title: 'Select token', exclude: [] });
   }, []);
 
   const selectToken = useCallback(
     (token) => {
+      if (drawerState.exclude?.some((address) => address?.toLowerCase() === token.address.toLowerCase())) {
+        return;
+      }
       if (drawerState.callback) {
         drawerState.callback(token);
       }
       closeTokenDrawer();
     },
-    [drawerState.callback, closeTokenDrawer]
+    [drawerState.callback, drawerState.exclude, closeTokenDrawer]
   );
 
   const updateSelectedTokens = useCallback((updater) => {
@@ -268,6 +272,13 @@ export function AppProvider({ children }) {
     },
     [config, walletClient, wallet.address, fetchAbi]
   );
+
+  const disconnectWallet = useCallback(() => {
+    setWallet({ address: null, chainId: null, isAdmin: false });
+    setStatus(initialStatus);
+    setWalletClient(null);
+    setBalances({});
+  }, []);
 
   const writeTokenContract = useCallback(
     async (tokenMeta, method, params = []) => {
@@ -341,79 +352,109 @@ export function AppProvider({ children }) {
   }, [fetchAbi, publicClient, tokens, wallet.address]);
 
   const refreshMetrics = useCallback(async () => {
-    if (!publicClient || !pairContract?.abi) {
+    if (!publicClient) {
       return;
     }
 
-    try {
-      const [token0, token1, reserves] = await Promise.all([
-        publicClient.readContract({
-          address: pairContract.address,
-          abi: pairContract.abi,
-          functionName: 'token0'
-        }),
-        publicClient.readContract({
-          address: pairContract.address,
-          abi: pairContract.abi,
-          functionName: 'token1'
-        }),
-        publicClient.readContract({
-          address: pairContract.address,
-          abi: pairContract.abi,
-          functionName: 'getReserves'
-        })
-      ]);
+    const updates = {};
 
-      const [reserve0Raw, reserve1Raw] = Array.isArray(reserves)
-        ? reserves
-        : [reserves._reserve0, reserves._reserve1];
+    if (pairContract?.abi && pairContract?.address) {
+      try {
+        const [token0, token1, reserves] = await Promise.all([
+          publicClient.readContract({
+            address: pairContract.address,
+            abi: pairContract.abi,
+            functionName: 'token0'
+          }),
+          publicClient.readContract({
+            address: pairContract.address,
+            abi: pairContract.abi,
+            functionName: 'token1'
+          }),
+          publicClient.readContract({
+            address: pairContract.address,
+            abi: pairContract.abi,
+            functionName: 'getReserves'
+          })
+        ]);
 
-      const findTokenMeta = (address) =>
-        tokens.find((token) => token.address.toLowerCase() === address.toLowerCase());
+        const [reserve0Raw, reserve1Raw] = Array.isArray(reserves)
+          ? reserves
+          : [reserves._reserve0, reserves._reserve1];
 
-      const token0Meta = findTokenMeta(token0);
-      const token1Meta = findTokenMeta(token1);
+        const findTokenMeta = (address) =>
+          tokens.find((token) => token.address.toLowerCase() === address.toLowerCase());
 
-      const formatReserve = (value, decimals) => {
-        if (typeof value === 'undefined' || value === null) {
-          return '--';
-        }
-        try {
-          const parsed = Number.parseFloat(formatUnits(value, decimals));
-          if (!Number.isFinite(parsed)) return '--';
-          return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(parsed);
-        } catch (error) {
-          console.warn('Reserve format failed', error);
-          return '--';
-        }
-      };
+        const token0Meta = findTokenMeta(token0);
+        const token1Meta = findTokenMeta(token1);
 
-      const nextReserves = {
-        usdc: token0Meta?.symbol === 'USDC'
-          ? formatReserve(reserve0Raw, token0Meta.decimals)
-          : formatReserve(reserve1Raw, token1Meta?.decimals ?? 18),
-        cbltz: token0Meta?.symbol === 'CBLTZ'
-          ? formatReserve(reserve0Raw, token0Meta.decimals)
-          : formatReserve(reserve1Raw, token1Meta?.decimals ?? 18)
-      };
+        const formatReserve = (value, decimals) => {
+          if (typeof value === 'undefined' || value === null) {
+            return '--';
+          }
+          try {
+            const parsed = Number.parseFloat(formatUnits(value, decimals));
+            if (!Number.isFinite(parsed)) return '--';
+            return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(parsed);
+          } catch (error) {
+            console.warn('Reserve format failed', error);
+            return '--';
+          }
+        };
 
-      setPairInfo({
-        token0,
-        token1,
-        reserve0: reserve0Raw,
-        reserve1: reserve1Raw,
-        blockTimestampLast: Array.isArray(reserves) ? reserves[2] : reserves._blockTimestampLast
-      });
+        const nextReserves = {
+          usdc: token0Meta?.symbol === 'USDC'
+            ? formatReserve(reserve0Raw, token0Meta.decimals)
+            : formatReserve(reserve1Raw, token1Meta?.decimals ?? 18),
+          cbltz: token0Meta?.symbol === 'CBLTZ'
+            ? formatReserve(reserve0Raw, token0Meta.decimals)
+            : formatReserve(reserve1Raw, token1Meta?.decimals ?? 18)
+        };
 
+        setPairInfo({
+          token0,
+          token1,
+          reserve0: reserve0Raw,
+          reserve1: reserve1Raw,
+          blockTimestampLast: Array.isArray(reserves) ? reserves[2] : reserves._blockTimestampLast
+        });
+
+        updates.reserves = nextReserves;
+        updates.lastSync = `Reserves synced ${new Date().toLocaleTimeString()}`;
+      } catch (error) {
+        console.error('Metric refresh failed', error);
+      }
+    }
+
+    const carbonContract = config?.contracts?.carbonBlitz;
+    if (carbonContract?.abi && carbonContract.address) {
+      try {
+        const abi = await fetchAbi(carbonContract.abi);
+        const rawSupply = await publicClient.readContract({
+          address: carbonContract.address,
+          abi,
+          functionName: 'totalSupply'
+        });
+        const decimals = tokens.find((token) => token.symbol === 'CBLTZ')?.decimals ?? 18;
+        const human = formatUnits(rawSupply, decimals);
+        const [integerPart, decimalPart = ''] = human.split('.');
+        const withSeparators = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const rawDecimal = decimalPart.slice(0, 2);
+        const normalizedDecimal = rawDecimal.replace(/0+$/, '');
+        const decimalSegment = normalizedDecimal ? `.${normalizedDecimal}` : '';
+        updates.supply = `${withSeparators}${decimalSegment} CBLTZ`;
+      } catch (error) {
+        console.error('Supply fetch failed', error);
+      }
+    }
+
+    if (Object.keys(updates).length) {
       setMetrics((current) => ({
         ...current,
-        reserves: nextReserves,
-        lastSync: `Reserves synced ${new Date().toLocaleTimeString()}`
+        ...updates
       }));
-    } catch (error) {
-      console.error('Metric refresh failed', error);
     }
-  }, [pairContract, publicClient, tokens]);
+  }, [config, fetchAbi, pairContract, publicClient, tokens]);
 
   useEffect(() => {
     refreshMetrics();
@@ -432,6 +473,7 @@ export function AppProvider({ children }) {
       wallet,
       status,
       connectWallet,
+      disconnectWallet,
       tokens,
       selectedTokens,
       updateSelectedTokens,
@@ -457,6 +499,7 @@ export function AppProvider({ children }) {
       wallet,
       status,
       connectWallet,
+      disconnectWallet,
       tokens,
       selectedTokens,
       updateSelectedTokens,

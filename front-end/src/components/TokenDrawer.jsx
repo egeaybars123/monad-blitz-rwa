@@ -4,7 +4,22 @@ import { useApp } from '../state/AppProvider.jsx';
 export default function TokenDrawer() {
   const { drawerState, closeTokenDrawer, selectToken, tokens } = useApp();
 
-  const sortedTokens = useMemo(() => tokens.slice().sort((a, b) => a.symbol.localeCompare(b.symbol)), [tokens]);
+  const excludeSet = useMemo(() => {
+    return new Set(
+      (drawerState.exclude ?? [])
+        .filter(Boolean)
+        .map((address) => address.toLowerCase())
+    );
+  }, [drawerState.exclude]);
+
+  const sortedTokens = useMemo(
+    () =>
+      tokens
+        .filter((token) => !excludeSet.has(token.address.toLowerCase()))
+        .slice()
+        .sort((a, b) => a.symbol.localeCompare(b.symbol)),
+    [excludeSet, tokens]
+  );
 
   if (!drawerState.open) return null;
 
@@ -22,6 +37,11 @@ export default function TokenDrawer() {
           </button>
         </header>
         <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+          {sortedTokens.length === 0 && (
+            <p className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-center text-xs text-monad-offwhite/60">
+              No tokens available for this selection.
+            </p>
+          )}
           {sortedTokens.map((token) => (
             <button
               key={token.address}

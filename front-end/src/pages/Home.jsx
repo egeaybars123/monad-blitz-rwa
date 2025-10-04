@@ -30,7 +30,7 @@ const cards = [
 ];
 
 export default function Home() {
-  const { status, metrics, connectWallet } = useApp();
+  const { status, metrics } = useApp();
 
   return (
     <div className="flex flex-col gap-10">
@@ -50,13 +50,6 @@ export default function Home() {
             >
               Launch App
             </Link>
-            <button
-              type="button"
-              onClick={connectWallet}
-              className="inline-flex items-center text-sm font-semibold text-monad-purple transition hover:text-monad-offwhite"
-            >
-              {status.connected ? 'Refresh Wallet' : 'Connect Wallet'} →
-            </button>
           </div>
         </div>
         <div className="rounded-3xl border border-monad-purple/20 bg-[linear-gradient(160deg,rgba(32,0,82,0.75),rgba(14,16,15,0.9))] p-6 shadow-xl">
@@ -72,19 +65,9 @@ export default function Home() {
               {status.message}
             </span>
           </div>
-          <div className="mt-6 grid gap-6">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-monad-offwhite/50">TVL</p>
-              <p className="mt-2 text-3xl font-semibold">{metrics.tvl}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-monad-offwhite/50">24h Volume</p>
-              <p className="mt-2 text-3xl font-semibold">{metrics.volume}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-monad-offwhite/50">CBLTZ Supply</p>
-              <p className="mt-2 text-3xl font-semibold">{metrics.supply}</p>
-            </div>
+          <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-monad-offwhite/50">CBLTZ Supply</p>
+            <p className="mt-3 text-4xl font-semibold">{metrics.supply}</p>
           </div>
         </div>
       </section>

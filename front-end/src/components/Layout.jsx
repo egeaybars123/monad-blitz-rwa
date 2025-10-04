@@ -14,7 +14,7 @@ export default function Layout({ children }) {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(131,110,249,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(131,110,249,0.08)_1px,transparent_1px)] bg-[length:78px_78px] opacity-30"
       />
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col gap-12 px-5 py-12 lg:px-10">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-12 px-5 py-12 lg:px-10">
         <Navbar />
         <main className="flex flex-1 flex-col gap-10">{children}</main>
         <Footer />

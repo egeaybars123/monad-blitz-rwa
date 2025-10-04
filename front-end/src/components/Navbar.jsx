@@ -11,7 +11,7 @@ const links = [
 ];
 
 export default function Navbar() {
-  const { status, connectWallet, wallet, config } = useApp();
+  const { status, connectWallet, disconnectWallet, wallet, config } = useApp();
 
   const linkBase =
     'rounded-xl border border-transparent px-3 py-1.5 text-sm transition hover:border-monad-berry/40 hover:bg-monad-berry/20 hover:text-monad-offwhite';
@@ -29,7 +29,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      <nav className="flex flex-wrap items-center gap-3 text-sm text-monad-offwhite/70">
+      <nav className="flex flex-wrap items-center justify-center gap-3 text-sm text-monad-offwhite/70 lg:flex-1 lg:flex-nowrap lg:justify-center lg:gap-4">
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -42,7 +42,7 @@ export default function Navbar() {
         ))}
       </nav>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
         <button
           type="button"
           className="rounded-full border border-monad-purple/30 bg-monad-blue/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-monad-offwhite/80"
@@ -56,6 +56,15 @@ export default function Navbar() {
         >
           {wallet.address ? `${wallet.address.slice(0, 6)}…${wallet.address.slice(-4)}` : 'Connect Wallet'}
         </button>
+        {wallet.address && (
+          <button
+            type="button"
+            onClick={disconnectWallet}
+            className="rounded-full border border-monad-purple/40 bg-transparent px-5 py-2 text-sm font-semibold text-monad-offwhite/80 transition hover:border-monad-berry/40 hover:text-monad-offwhite"
+          >
+            Disconnect Wallet
+          </button>
+        )}
         <span
           className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
             status.connected

@@ -58,12 +58,19 @@ export default function Swap() {
   };
 
   const handleTokenPick = (slot) => {
-    openTokenDrawer(`Select ${slot === 'pay' ? 'pay' : 'receive'} token`, (token) => {
-      updateSelectedTokens((current) => ({
-        ...current,
-        [slot]: token
-      }));
-    });
+    const otherSlot = slot === 'pay' ? 'receive' : 'pay';
+    const exclude = selectedTokens[otherSlot]?.address ? [selectedTokens[otherSlot].address] : [];
+
+    openTokenDrawer(
+      `Select ${slot === 'pay' ? 'pay' : 'receive'} token`,
+      (token) => {
+        updateSelectedTokens((current) => ({
+          ...current,
+          [slot]: token
+        }));
+      },
+      { exclude }
+    );
   };
 
   const handleSwap = async () => {
@@ -292,7 +299,6 @@ export default function Swap() {
               {selectedTokens.receive?.symbol ?? 'Select'}
             </button>
           </div>
-          <span className="text-xs text-monad-offwhite/50">Preview updates automatically using pool reserves.</span>
         </div>
 
         <button
